@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>こくごのせかい🦉</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap');
+:root{
+  --sky:#F0F4FF;--blue:#4A90D9;--navy:#1A2B4A;--white:#fff;
+  --yellow:#FFD93D;--orange:#FF8C42;--green:#6BCB77;--gray:#8899AA;
+  --shadow:0 4px 20px rgba(74,144,217,0.13);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Zen Maru Gothic','Hiragino Kaku Gothic ProN',sans-serif;background:var(--sky);color:var(--navy);min-height:100vh;}
+
+/* ローディング */
+#authLoading{min-height:100vh;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--blue);font-weight:700;}
+
+/* ログイン */
+#loginScreen{display:none;min-height:100vh;align-items:center;justify-content:center;background:var(--sky);padding:20px;}
+.login-card{background:#fff;border-radius:24px;padding:40px 28px;width:100%;max-width:380px;box-shadow:0 8px 40px rgba(74,144,217,0.18);text-align:center;}
+.login-owl{font-size:72px;display:block;margin-bottom:12px;}
+.login-title{font-size:26px;font-weight:900;color:var(--navy);margin-bottom:6px;}
+.login-sub{font-size:14px;color:var(--gray);margin-bottom:28px;}
+.login-field{width:100%;padding:14px 16px;border:2px solid #D0DFF0;border-radius:12px;font-family:inherit;font-size:16px;color:var(--navy);background:var(--sky);outline:none;margin-bottom:12px;transition:border-color .2s;}
+.login-field:focus{border-color:var(--blue);background:#fff;}
+.login-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--blue),#2E6DB4);color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:18px;font-weight:900;cursor:pointer;box-shadow:0 4px 16px rgba(74,144,217,.35);transition:transform .15s;}
+.login-btn:hover{transform:translateY(-2px);}
+.login-error{color:#CC0000;font-size:13px;margin-top:14px;min-height:18px;}
+
+/* ヘッダー */
+#appHeader{display:none;background:linear-gradient(135deg,var(--blue),#2E6DB4);color:#fff;padding:14px 20px;align-items:center;gap:12px;box-shadow:0 3px 12px rgba(74,144,217,.4);position:sticky;top:0;z-index:200;}
+.hd-owl{font-size:32px;}
+.hd-titles{flex:1;}
+.hd-title{font-size:20px;font-weight:900;}
+.hd-sub{font-size:10px;opacity:.8;margin-top:1px;}
+.hd-r{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+.hd-email{font-size:10px;color:rgba(255,255,255,.7);width:100%;text-align:right;}
+.hdr-btn{padding:6px 11px;border:2px solid rgba(255,255,255,.5);border-radius:10px;background:rgba(255,255,255,.12);color:#fff;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:background .2s;}
+.hdr-btn:hover{background:rgba(255,255,255,.25);}
+.adm-btn{display:none;background:rgba(255,217,61,.2);border-color:rgba(255,217,61,.6);color:#FFD93D;}
+
+/* ナビタブ */
+#appNav{display:none;background:#fff;border-bottom:2px solid #E0EAF8;position:sticky;top:64px;z-index:190;}
+.nav-inner{display:flex;max-width:700px;margin:0 auto;}
+.nav-tab{flex:1;padding:14px 8px;text-align:center;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700;color:var(--gray);border:none;background:none;border-bottom:3px solid transparent;transition:all .2s;}
+.nav-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.nav-tab .tab-icon{font-size:22px;display:block;margin-bottom:3px;}
+
+/* 子アプリエリア */
+#appMain{display:none;max-width:700px;margin:0 auto;padding:20px 16px 60px;}
+
+/* モーダル共通 */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:#fff;border-radius:20px;padding:26px;width:100%;max-width:400px;box-shadow:0 8px 32px rgba(0,0,0,.22);max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:18px;font-weight:900;color:var(--navy);margin-bottom:16px;}
+.modal-field{width:100%;padding:12px 14px;border:2px solid #D0DFF0;border-radius:12px;font-family:inherit;font-size:15px;color:var(--navy);margin-bottom:10px;outline:none;}
+.modal-field:focus{border-color:var(--blue);}
+.modal-row{display:flex;gap:10px;margin-top:4px;}
+.modal-ok{flex:1;padding:12px;background:var(--green);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;}
+.modal-cancel{padding:12px 16px;background:#EEE;color:var(--gray);border:none;border-radius:12px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;}
+.modal-msg{font-size:13px;margin-top:10px;min-height:18px;}
+.modal-msg.ok{color:#27AE60;}.modal-msg.err{color:#CC0000;}
+.gen-btn{padding:8px 14px;background:var(--sky);border:2px solid var(--blue);border-radius:10px;color:var(--blue);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px;}
+.divider-line{height:1px;background:#E0E8F0;margin:14px 0;}
+.user-item{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:#F0F4FA;border-radius:10px;margin-bottom:6px;}
+.user-name{font-weight:700;font-size:13px;}
+.user-email{font-size:11px;color:var(--gray);}
+.del-btn{background:#FFF0F0;border:1px solid #FCA5A5;color:#DC2626;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit;}
+.admin-badge{background:#4A90D9;color:#fff;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:4px;}
+</style>
+</head>
+<body>
+
+<div id="authLoading">🦉 読み込み中...</div>
+
+<!-- ログイン -->
+<div id="loginScreen">
+  <div class="login-card">
+    <span class="login-owl">🦉</span>
+    <div class="login-title">こくごのせかい</div>
+    <div class="login-sub">メールアドレスとパスワードでログイン</div>
+    <input class="login-field" type="email" id="zEmail" placeholder="メールアドレス" autocomplete="email">
+    <input class="login-field" type="password" id="zPass" placeholder="パスワード" autocomplete="current-password">
+    <button class="login-btn" onclick="zLogin()">🔑 ログイン</button>
+    <div class="login-error" id="zErr"></div>
+  </div>
+</div>
+
+<!-- ヘッダー -->
+<div id="appHeader">
+  <div class="hd-owl">🦉</div>
+  <div class="hd-titles">
+    <div class="hd-title">こくごのせかい</div>
+    <div class="hd-sub">読む力・考える力を育てる</div>
+  </div>
+  <div class="hd-r">
+    <div class="hd-email" id="hdEmail"></div>
+    <div style="display:flex;gap:6px;margin-top:4px;">
+      <button class="hdr-btn adm-btn" id="adminBtn" onclick="openAdmin()">⚙️ 管理</button>
+      <button class="hdr-btn" onclick="openPassModal()">🔒 PW</button>
+      <button class="hdr-btn" onclick="zLogout()">ログアウト</button>
+    </div>
+  </div>
+</div>
+
+<!-- ナビ -->
+<div id="appNav">
+  <div class="nav-inner">
+    <button class="nav-tab active" id="tab-library" onclick="switchTab('library')">
+      <span class="tab-icon">📚</span>図書館
+    </button>
+    <button class="nav-tab" id="tab-drill" onclick="switchTab('drill')">
+      <span class="tab-icon">🎯</span>ドリル
+    </button>
+    <button class="nav-tab" id="tab-chat" onclick="switchTab('chat')">
+      <span class="tab-icon">💬</span>先生に質問
+    </button>
+  </div>
+</div>
+
+<!-- 子アプリエリア -->
+<div id="appMain"></div>
+
+<!-- PW変更モーダル -->
+<div class="modal-overlay" id="passModal">
+  <div class="modal-box">
+    <div class="modal-title">🔒 パスワード変更</div>
+    <input class="modal-field" type="password" id="newPass1" placeholder="新しいパスワード（6文字以上）">
+    <input class="modal-field" type="password" id="newPass2" placeholder="もう一度入力">
+    <div class="modal-row">
+      <button class="modal-ok" onclick="doChangePass()">変更する</button>
+      <button class="modal-cancel" onclick="closePassModal()">戻る</button>
+    </div>
+    <div class="modal-msg" id="passMsg"></div>
+  </div>
+</div>
+
+<!-- 管理者パネル -->
+<div class="modal-overlay" id="adminPanel">
+  <div class="modal-box">
+    <div class="modal-title">⚙️ ユーザー管理</div>
+    <input class="modal-field" type="text" id="nuName" placeholder="表示名">
+    <input class="modal-field" type="email" id="nuEmail" placeholder="メールアドレス">
+    <input class="modal-field" type="text" id="nuPass" placeholder="仮パスワード" readonly>
+    <button class="gen-btn" onclick="genPass()">🎲 パスワード自動生成</button>
+    <div class="modal-row">
+      <button class="modal-ok" id="addUserBtn" onclick="addUser()">登録する</button>
+      <button class="modal-cancel" onclick="closeAdmin()">閉じる</button>
+    </div>
+    <div class="modal-msg" id="nuErr"></div>
+    <div class="divider-line"></div>
+    <div style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:8px;">登録ユーザー一覧</div>
+    <div id="userList"></div>
+  </div>
+</div>
+
+<script>
+var FUNC_BASE = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+  ? 'http://localhost:5001/kensetsu-nippo-842a2/us-central1'
+  : 'https://us-central1-kensetsu-nippo-842a2.cloudfunctions.net';
+var EP  = FUNC_BASE + '/askAI';
+var KEY = 'HeartsHouse2026Key';
+var currentUser = null;
+var currentTab  = 'library';
+
+// ===== getBook =====
+async function fetchBookText(url){
+  var r=await fetch(FUNC_BASE+'/getBook',{method:'POST',headers:{'Content-Type':'application/json','x-access-key':KEY},body:JSON.stringify({url:url})});
+  var d=await r.json();
+  return d&&d.data&&d.data.text?d.data.text:d&&d.text?d.text:'';
+}
+
+// ===== extractText（全子アプリ共通） =====
+function extractText(d){
+  return d?.data?.text
+    || d?.candidates?.[0]?.content?.parts?.[0]?.text
+    || d?.data?.candidates?.[0]?.content?.parts?.[0]?.text
+    || d?.text || '';
+}
+
+// ===== callAI（全子アプリ共通） =====
+// ai.js確認済み：systemPromptフィールドなし、promptに先頭結合
+// messages形式：{role, content}（m.contentを使用）
+async function callAI(opts){
+  var promptText = opts.prompt || opts.userMessage || '';
+  if(opts.systemPrompt){
+    promptText = opts.systemPrompt + '\n\n' + promptText;
+  }
+  var body = {
+    model: 'gemini-2.5-flash',
+    mode: 'normal',
+    prompt: promptText,
+  };
+  // messages: {role, content} 形式（ai.js 194行目確認済み）
+  if(opts.messages && opts.messages.length){
+    body.messages = opts.messages.map(function(m){
+      return {
+        role: m.role,
+        content: m.content || (m.parts && m.parts[0] ? m.parts[0].text : ''),
+      };
+    });
+  }
+  if(opts.useSearch)      body.useSearch = true;
+  if(opts.responseSchema) body.responseSchema = opts.responseSchema;
+
+  var res = await fetch(EP,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-access-key':KEY},
+    body:JSON.stringify(body),
+  });
+  if(!res.ok) throw new Error('API Error '+res.status);
+  return await res.json();
+}
+
+// ===== Firebase helper =====
+function fb(){ return window.__fb; }
+
+function initAuth(){
+  if(!window.__fb){
+    var w=0,t=setInterval(function(){
+      w+=200;
+      if(window.__fb){clearInterval(t);initAuth();}
+      else if(w>=6000){
+        clearInterval(t);
+        document.getElementById('authLoading').style.display='none';
+        document.getElementById('loginScreen').style.display='flex';
+      }
+    },200);
+    return;
+  }
+  fb().onAuthStateChanged(fb().auth, async function(user){
+    if(user){
+      currentUser=user;
+      document.getElementById('hdEmail').textContent=user.email;
+      try{
+        var snap=await fb().getDoc(fb().doc(fb().db,'users',user.uid));
+        if(!snap.exists()){
+          await fb().setDoc(fb().doc(fb().db,'users',user.uid),{
+            uid:user.uid,email:user.email,name:user.email.split('@')[0],
+            isAdmin:false,createdAt:fb().serverTimestamp()
+          });
+        }
+        if(snap.exists()&&snap.data().isAdmin){
+          document.getElementById('adminBtn').style.display='inline-block';
+        }
+      }catch(e){}
+      showApp();
+    }else{
+      document.getElementById('authLoading').style.display='none';
+      document.getElementById('loginScreen').style.display='flex';
+    }
+  });
+}
+document.addEventListener('DOMContentLoaded',initAuth);
+
+function showApp(){
+  document.getElementById('authLoading').style.display='none';
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appHeader').style.display='flex';
+  document.getElementById('appNav').style.display='block';
+  document.getElementById('appMain').style.display='block';
+  switchTab('library');
+}
+
+// ===== タブ切替 =====
+function switchTab(name){
+  currentTab=name;
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('tab-'+name).classList.add('active');
+  var apps={
+    library: libraryApp,
+    drill:   drillApp,
+    chat:    chatApp,
+  };
+  document.getElementById('appMain').innerHTML='';
+  apps[name]();
+}
+
+// ===== Auth =====
+async function zLogin(){
+  var email=document.getElementById('zEmail').value.trim();
+  var pass=document.getElementById('zPass').value;
+  var err=document.getElementById('zErr'); err.textContent='';
+  if(!email||!pass){err.textContent='メールとパスワードを入力してください';return;}
+  try{ await fb().signInWithEmailAndPassword(fb().auth,email,pass); }
+  catch(e){
+    var m={'auth/invalid-credential':'メールかパスワードが違います','auth/too-many-requests':'しばらく待ってから再試行してください'};
+    err.textContent=m[e.code]||'ログインできませんでした';
+  }
+}
+async function zLogout(){
+  if(!confirm('ログアウトしますか？'))return;
+  await fb().signOut(fb().auth);
+  location.reload();
+}
+
+// ===== PW変更 =====
+function openPassModal(){
+  document.getElementById('newPass1').value='';
+  document.getElementById('newPass2').value='';
+  document.getElementById('passMsg').textContent='';
+  document.getElementById('passModal').classList.add('show');
+}
+function closePassModal(){document.getElementById('passModal').classList.remove('show');}
+async function doChangePass(){
+  var p1=document.getElementById('newPass1').value;
+  var p2=document.getElementById('newPass2').value;
+  var msg=document.getElementById('passMsg');
+  if(p1.length<6){msg.className='modal-msg err';msg.textContent='6文字以上入力してください';return;}
+  if(p1!==p2){msg.className='modal-msg err';msg.textContent='パスワードが一致しません';return;}
+  try{
+    await fb().updatePassword(fb().auth.currentUser,p1);
+    msg.className='modal-msg ok';msg.textContent='パスワードを変更しました ✓';
+    setTimeout(closePassModal,1800);
+  }catch(e){
+    msg.className='modal-msg err';
+    msg.textContent=e.code==='auth/requires-recent-login'?'一度ログアウトして再ログインしてください':'エラーが発生しました';
+  }
+}
+
+// ===== 管理者パネル =====
+function openAdmin(){document.getElementById('adminPanel').classList.add('show');loadUsers();}
+function closeAdmin(){document.getElementById('adminPanel').classList.remove('show');}
+function genPass(){
+  var c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#';
+  var p='';for(var i=0;i<10;i++)p+=c[Math.floor(Math.random()*c.length)];
+  document.getElementById('nuPass').value=p;
+}
+async function addUser(){
+  var name=document.getElementById('nuName').value.trim();
+  var email=document.getElementById('nuEmail').value.trim();
+  var pass=document.getElementById('nuPass').value;
+  var err=document.getElementById('nuErr');err.textContent='';err.style.color='#DC2626';
+  if(!name){err.textContent='名前を入力してください';return;}
+  if(!email){err.textContent='メールアドレスを入力してください';return;}
+  if(pass.length<6){err.textContent='パスワードを自動生成してください';return;}
+  var btn=document.getElementById('addUserBtn');btn.textContent='登録中...';btn.disabled=true;
+  try{
+    var cred=await fb().createUserWithEmailAndPassword(fb().auth,email,pass);
+    await fb().setDoc(fb().doc(fb().db,'users',cred.user.uid),{
+      uid:cred.user.uid,name:name,email:email,isAdmin:false,createdAt:fb().serverTimestamp()
+    });
+    err.style.color='#27AE60';err.textContent='✅ '+name+' を登録しました';
+    ['nuName','nuEmail','nuPass'].forEach(function(id){document.getElementById(id).value='';});
+    loadUsers();
+  }catch(e){
+    var m={'auth/email-already-in-use':'このメールはすでに使われています','auth/invalid-email':'メールの形式が正しくありません'};
+    err.textContent='エラー: '+(m[e.code]||e.message);
+  }
+  btn.textContent='登録する';btn.disabled=false;
+}
+async function loadUsers(){
+  var el=document.getElementById('userList');
+  el.innerHTML='<div style="color:var(--gray);font-size:12px;">読み込み中...</div>';
+  try{
+    var snap=await fb().getDocs(fb().query(fb().collection(fb().db,'users'),fb().orderBy('name')));
+    if(snap.empty){el.innerHTML='<div style="color:var(--gray);font-size:12px;">ユーザーなし</div>';return;}
+    var html='';
+    snap.forEach(function(d){
+      var u=d.data();
+      var ab=u.isAdmin?'<span class="admin-badge">管理者</span>':'';
+      html+='<div class="user-item"><div><div class="user-name">'+(u.name||'名前なし')+ab+'</div>'
+        +'<div class="user-email">'+(u.email||d.id)+'</div></div>'
+        +'<button class="del-btn" onclick="deleteUser(\''+d.id+'\',\''+(u.name||'このユーザー')+'\',this)">削除</button></div>';
+    });
+    el.innerHTML=html;
+  }catch(e){el.innerHTML='<div style="color:#DC2626;font-size:12px;">'+e.message+'</div>';}
+}
+async function deleteUser(uid,name,btn){
+  if(!confirm(name+'を削除しますか？'))return;
+  btn.textContent='削除中...';btn.disabled=true;
+  try{await fb().deleteDoc(fb().doc(fb().db,'users',uid));loadUsers();}
+  catch(e){alert('削除エラー: '+e.message);btn.textContent='削除';btn.disabled=false;}
+}
+</script>
+
+<!-- 子アプリJS（インライン） -->
+<script>
+// ===== 📚 図書館アプリ =====
+function libraryApp(){
+  var el = document.getElementById('appMain');
+  el.innerHTML = `
+<style>
+.lib-search-box{background:#fff;border-radius:20px;padding:20px;box-shadow:0 4px 20px rgba(74,144,217,.13);margin-bottom:16px;}
+.lib-title{font-size:18px;font-weight:900;color:#1A2B4A;margin-bottom:14px;}
+.lib-input{width:100%;padding:13px 16px;border:2px solid #D0DFF0;border-radius:12px;font-family:inherit;font-size:16px;color:#1A2B4A;background:#F0F4FF;outline:none;margin-bottom:10px;transition:border-color .2s;}
+.lib-input:focus{border-color:#4A90D9;background:#fff;}
+.lib-btn{width:100%;padding:14px;background:linear-gradient(135deg,#4A90D9,#2E6DB4);color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:17px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(74,144,217,.35);}
+.lib-result{background:#fff;border-radius:16px;padding:16px;margin-bottom:10px;box-shadow:0 4px 16px rgba(74,144,217,.1);border-left:4px solid #4A90D9;}
+.lib-book-title{font-size:17px;font-weight:900;color:#1A2B4A;margin-bottom:4px;}
+.lib-book-author{font-size:12px;color:#8899AA;margin-bottom:8px;}
+.lib-book-summary{font-size:14px;color:#1A2B4A;line-height:1.6;margin-bottom:10px;}
+.lib-book-url{font-size:11px;color:#4A90D9;margin-bottom:10px;word-break:break-all;}
+.lib-btn-row{display:flex;gap:8px;}
+.lib-save-btn{flex:1;padding:10px;background:#6BCB77;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
+.lib-drill-btn{flex:1;padding:10px;background:#FF8C42;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
+.lib-saved-item{background:#fff;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 4px 16px rgba(74,144,217,.1);}
+.lib-saved-title{font-size:16px;font-weight:900;color:#1A2B4A;}
+.lib-saved-author{font-size:12px;color:#8899AA;margin-top:2px;}
+.lib-saved-row{display:flex;gap:8px;margin-top:10px;}
+.lib-open-btn{padding:8px 14px;background:#F0F4FF;border:2px solid #4A90D9;color:#4A90D9;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.lib-del-btn{padding:8px 12px;background:#FFF0F0;border:1px solid #FCA5A5;color:#DC2626;border-radius:10px;font-family:inherit;font-size:13px;cursor:pointer;}
+.lib-loading{text-align:center;padding:30px;color:#4A90D9;font-size:16px;font-weight:700;}
+</style>
+<div class="lib-search-box">
+  <div class="lib-title">📚 著作権フリーの本を検索</div>
+  <input class="lib-input" id="libQuery" placeholder="作品名・著者名を入力（例：宮沢賢治、桃太郎）">
+  <button class="lib-btn" onclick="libSearch()">🔍 検索する</button>
+</div>
+<div id="libResults"></div>
+<div class="lib-title" style="padding:0 4px;margin-bottom:12px;">📖 保存した本</div>
+<div id="libSaved"></div>`;
+  loadLibrary();
+}
+
+async function libSearch(){
+  var q = document.getElementById('libQuery').value.trim();
+  if(!q) return;
+  var el = document.getElementById('libResults');
+  el.innerHTML = '<div class="lib-loading">🔍 検索中...</div>';
+  try{
+    // Step1: useSearch で作品情報取得
+    var r1 = await callAI({
+      systemPrompt: 'あなたは日本文学の専門家です。著作権フリーの作品情報を正確に提供してください。',
+      prompt: '「'+q+'」に関連する著作権フリーの日本文学作品を3作品調べてください。青空文庫などのURLも含めて教えてください。',
+      useSearch: true,
+    });
+    var info = extractText(r1);
+
+    // Step2: JSON整形
+    var r2 = await callAI({
+      systemPrompt: 'JSONのみ返してください。前置き不要。',
+      prompt: '以下の情報から著作権フリーの作品リストをJSONで返してください。\n\n'+info+'\n\n形式：{"books":[{"title":"作品名","author":"著者名","url":"青空文庫URL","summary":"100字以内のあらすじ"}]}',
+    });
+    var parsed = parseLibJSON(extractText(r2));
+    if(!parsed||!parsed.books||!parsed.books.length) throw new Error('parse fail');
+
+    // data属性でインデックス管理・安全なイベント処理
+    window._libSearchResults = parsed.books;
+    el.innerHTML = parsed.books.map(function(b,i){
+      return '<div class="lib-result">'
+        +'<div class="lib-book-title">'+esc(b.title)+'</div>'
+        +'<div class="lib-book-author">'+esc(b.author)+'</div>'
+        +'<div class="lib-book-summary">'+esc(b.summary)+'</div>'
+        +'<div class="lib-book-url">'+esc(b.url||'URL不明')+'</div>'
+        +'<div class="lib-btn-row">'
+        +'<button class="lib-save-btn" data-idx="'+i+'" onclick="saveBookByIdx(this.dataset.idx)">📥 保存</button>'
+        +'<button class="lib-drill-btn" data-idx="'+i+'" onclick="drillByIdx(this.dataset.idx)">🎯 ドリルをする</button>'
+        +'</div></div>';
+    }).join('');
+  }catch(e){
+    el.innerHTML = '<div style="color:#CC0000;padding:16px;">検索できませんでした。別のキーワードをお試しください。</div>';
+  }
+}
+
+function drillByIdx(idx){
+  var b = (window._libSearchResults||[])[parseInt(idx)];
+  if(b) startDrillFromLib(b.title, b.author);
+}
+async function saveBookByIdx(idx){
+  var book = (window._libSearchResults||[])[parseInt(idx)];
+  if(!book) return;
+  return saveBook(book);
+}
+async function saveBook(book){
+  if(!currentUser) return;
+  try{
+    var id = 'book_'+Date.now();
+    await fb().setDoc(fb().doc(fb().db,'library',id),{
+      uid: currentUser.uid,
+      title: book.title||'',
+      author: book.author||'',
+      url: book.url||'',
+      summary: book.summary||'',
+      createdAt: fb().serverTimestamp(),
+    });
+    alert('「'+book.title+'」を図書館に保存しました📚');
+    loadLibrary();
+  }catch(e){ alert('保存エラー: '+e.message); }
+}
+
+async function loadLibrary(){
+  var el = document.getElementById('libSaved');
+  if(!el) return;
+  try{
+    var snap = await fb().getDocs(
+      fb().query(fb().collection(fb().db,'library'), fb().orderBy('createdAt','desc'))
+    );
+    var mine = [];
+    snap.forEach(function(d){ if(d.data().uid===currentUser.uid) mine.push({id:d.id,...d.data()}); });
+    if(!mine.length){ el.innerHTML='<div style="color:#8899AA;font-size:13px;padding:8px 4px;">保存した本はまだありません</div>'; return; }
+    el.innerHTML = mine.map(function(b){
+      return '<div class="lib-saved-item">'
+        +'<div class="lib-saved-title">'+esc(b.title)+'</div>'
+        +'<div class="lib-saved-author">'+esc(b.author)+'</div>'
+        +'<div class="lib-saved-row">'
+        +(b.url?'<button class="lib-open-btn" onclick="window.open(\''+esc(b.url)+'\',\'_blank\')">🔗 本を開く</button>':'')
+        +'<button class="lib-open-btn" onclick="startDrillFromLib(\''+esc(b.title)+'\',\''+esc(b.author)+'\')">🎯 ドリル</button>'
+        +'<button class="lib-del-btn" data-bid="'+b.id+'" onclick="deleteBook(this.dataset.bid,this)">削除</button>'
+        +'</div></div>';
+    }).join('');
+  }catch(e){ el.innerHTML=''; }
+}
+
+async function deleteBook(id,btn){
+  if(!confirm('削除しますか？'))return;
+  btn.disabled=true;
+  try{ await fb().deleteDoc(fb().doc(fb().db,'library',id)); loadLibrary(); }
+  catch(e){ alert('削除エラー'); btn.disabled=false; }
+}
+
+function startDrillFromLib(title,author){
+  switchTab('drill');
+  setTimeout(function(){ drillStartFromLib(title,author); },300);
+}
+
+function parseLibJSON(text){
+  try{ return JSON.parse(text.replace(/```json|```/g,'').trim()); }catch(e){ return null; }
+}
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+</script>
+<script>
+// ===== 🎯 ドリルアプリ =====
+var drillState = {story:'',author:'',level:1,questions:[],currentQ:0,chatHistory:[],turnCount:0,storyText:'',storyUrl:''};
+
+function drillApp(){
+  var el = document.getElementById('appMain');
+  el.innerHTML = `
+<style>
+.dr-card{background:#fff;border-radius:20px;padding:20px;box-shadow:0 4px 20px rgba(74,144,217,.13);margin-bottom:16px;}
+.story-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.story-btn{background:#F0F4FF;border:3px solid transparent;border-radius:14px;padding:12px 8px;text-align:center;cursor:pointer;font-family:inherit;transition:all .2s;}
+.story-btn:hover{border-color:#4A90D9;transform:translateY(-2px);}
+.story-btn.selected{background:#EBF4FF;border-color:#4A90D9;}
+.story-icon{font-size:28px;display:block;margin-bottom:4px;}
+.story-name{font-size:13px;font-weight:700;color:#1A2B4A;}
+.story-author{font-size:11px;color:#8899AA;margin-top:2px;}
+.divider{text-align:center;color:#8899AA;font-size:12px;margin:10px 0;}
+.dr-input{width:100%;padding:12px 16px;border:2px solid #D0DFF0;border-radius:12px;font-family:inherit;font-size:16px;color:#1A2B4A;background:#F0F4FF;outline:none;transition:border-color .2s;}
+.dr-input:focus{border-color:#4A90D9;background:#fff;}
+.level-row{display:flex;gap:8px;}
+.lv-chip{flex:1;padding:10px 6px;border:3px solid transparent;border-radius:12px;text-align:center;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;background:#F0F4FF;transition:all .2s;}
+.lv-chip.lv1{color:#27AE60;}.lv-chip.lv1.sel{background:#E8F8EE;border-color:#27AE60;}
+.lv-chip.lv2{color:#4A90D9;}.lv-chip.lv2.sel{background:#EBF4FF;border-color:#4A90D9;}
+.lv-chip.lv3{color:#FF8C42;}.lv-chip.lv3.sel{background:#FFF3EB;border-color:#FF8C42;}
+.lv-chip.lv4{color:#FF6B9D;}.lv-chip.lv4.sel{background:#FFF0F5;border-color:#FF6B9D;}
+.start-btn{width:100%;padding:16px;background:linear-gradient(135deg,#FF8C42,#FF6B35);color:#fff;border:none;border-radius:16px;font-family:inherit;font-size:18px;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(255,140,66,.4);margin-top:8px;}
+.dr-loading{text-align:center;padding:40px;color:#4A90D9;font-weight:700;}
+.owl-bounce{font-size:64px;display:block;animation:bounce 1s infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.book-text{font-size:16px;line-height:2;color:#1A2B4A;white-space:pre-wrap;max-height:55vh;overflow-y:auto;padding:4px 0;}
+.proceed-btn{width:100%;padding:16px;background:linear-gradient(135deg,#FF8C42,#FF6B35);color:#fff;border:none;border-radius:16px;font-family:inherit;font-size:18px;font-weight:900;cursor:pointer;box-shadow:0 6px 20px rgba(255,140,66,.4);margin-top:16px;}
+.lv-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:700;margin-bottom:14px;}
+.lv-badge.lv1{background:#E8F8EE;color:#27AE60;}.lv-badge.lv2{background:#EBF4FF;color:#4A90D9;}
+.lv-badge.lv3{background:#FFF3EB;color:#FF8C42;}.lv-badge.lv4{background:#FFF0F5;color:#FF6B9D;}
+.owl-bubble{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;}
+.owl-face{font-size:52px;flex-shrink:0;}
+.bubble{background:#FFD93D;border-radius:18px 18px 18px 4px;padding:14px 16px;flex:1;position:relative;box-shadow:0 3px 12px rgba(255,217,61,.4);}
+.bubble::before{content:'';position:absolute;left:-10px;top:16px;border:8px solid transparent;border-right-color:#FFD93D;border-left:0;}
+.bubble-lv{font-size:10px;font-weight:700;color:#886600;margin-bottom:4px;}
+.bubble-q{font-size:17px;font-weight:700;color:#1A2B4A;line-height:1.6;}
+.chat-wrap{margin-bottom:12px;}
+.chat-msg{margin-bottom:10px;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.chat-msg.user{text-align:right;}
+.chat-msg.user .bbl{display:inline-block;background:#4A90D9;color:#fff;padding:10px 14px;border-radius:18px 18px 4px 18px;font-size:16px;max-width:85%;text-align:left;line-height:1.6;}
+.chat-msg.ai .bbl{display:inline-block;background:#fff;border:2px solid #D0DFF0;color:#1A2B4A;padding:10px 14px;border-radius:18px 18px 18px 4px;font-size:16px;max-width:90%;line-height:1.6;}
+.chat-msg .who{font-size:10px;color:#8899AA;margin-bottom:3px;font-weight:700;}
+.ans-area{background:#fff;border-radius:16px;padding:16px;box-shadow:0 4px 20px rgba(74,144,217,.13);margin-bottom:12px;}
+.ans-ta{width:100%;min-height:80px;padding:12px;border:2px solid #D0DFF0;border-radius:12px;font-family:inherit;font-size:17px;color:#1A2B4A;resize:none;outline:none;line-height:1.6;transition:border-color .2s;}
+.ans-ta:focus{border-color:#4A90D9;}
+.btn-row{display:flex;gap:10px;}
+.send-btn{flex:1;padding:14px;background:linear-gradient(135deg,#6BCB77,#45A55A);color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:18px;font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(107,203,119,.4);}
+.send-btn:disabled{background:#CCC;box-shadow:none;cursor:not-allowed;}
+.next-btn{padding:14px 20px;background:linear-gradient(135deg,#4A90D9,#2E6DB4);color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;}
+.home-link{display:block;text-align:center;margin-top:14px;color:#8899AA;font-size:14px;cursor:pointer;padding:8px;}
+.complete-card{text-align:center;padding:30px 20px;}
+.complete-icon{font-size:72px;display:block;margin-bottom:12px;}
+.complete-title{font-size:24px;font-weight:900;color:#1A2B4A;margin-bottom:8px;}
+.complete-sub{font-size:15px;color:#8899AA;margin-bottom:24px;line-height:1.8;white-space:pre-line;}
+.retry-btn{padding:14px 32px;background:linear-gradient(135deg,#FFD93D,#FFC107);color:#1A2B4A;border:none;border-radius:14px;font-family:inherit;font-size:18px;font-weight:900;cursor:pointer;}
+.dr-screen{display:none;}.dr-screen.active{display:block;}
+</style>
+<div class="dr-screen active" id="dr-select">
+  <div class="dr-card">
+    <div style="font-size:14px;font-weight:700;color:#4A90D9;margin-bottom:10px;">📚 作品を選択</div>
+    <div class="story-grid">
+      <button class="story-btn" onclick="drPickStory(this,'手袋を買いに','新美南吉')"><span class="story-icon">🧤</span><span class="story-name">手袋を買いに</span><span class="story-author">新美南吉</span></button>
+      <button class="story-btn" onclick="drPickStory(this,'ごんぎつね','新美南吉')"><span class="story-icon">🦊</span><span class="story-name">ごんぎつね</span><span class="story-author">新美南吉</span></button>
+      <button class="story-btn" onclick="drPickStory(this,'注文の多い料理店','宮沢賢治')"><span class="story-icon">🍽️</span><span class="story-name">注文の多い料理店</span><span class="story-author">宮沢賢治</span></button>
+      <button class="story-btn" onclick="drPickStory(this,'セロ弾きのゴーシュ','宮沢賢治')"><span class="story-icon">🎻</span><span class="story-name">セロ弾きのゴーシュ</span><span class="story-author">宮沢賢治</span></button>
+      <button class="story-btn" onclick="drPickStory(this,'桃太郎','日本昔話')"><span class="story-icon">🍑</span><span class="story-name">桃太郎</span><span class="story-author">日本昔話</span></button>
+      <button class="story-btn" onclick="drPickStory(this,'浦島太郎','日本昔話')"><span class="story-icon">🐢</span><span class="story-name">浦島太郎</span><span class="story-author">日本昔話</span></button>
+    </div>
+    <div class="divider">― または直接入力 ―</div>
+    <input class="dr-input" id="drCustom" placeholder="作品名を入力" oninput="drCustomInput(this.value)">
+  </div>
+  <div class="dr-card">
+    <div style="font-size:14px;font-weight:700;color:#4A90D9;margin-bottom:10px;">🎯 開始レベル</div>
+    <div class="level-row">
+      <button class="lv-chip lv1 sel" data-lv="1" onclick="drPickLv(this,1)"><span style="font-size:20px;display:block;">📖</span>事実</button>
+      <button class="lv-chip lv2" data-lv="2" onclick="drPickLv(this,2)"><span style="font-size:20px;display:block;">🤔</span>理由</button>
+      <button class="lv-chip lv3" data-lv="3" onclick="drPickLv(this,3)"><span style="font-size:20px;display:block;">💭</span>気持ち</button>
+      <button class="lv-chip lv4" data-lv="4" onclick="drPickLv(this,4)"><span style="font-size:20px;display:block;">✨</span>テーマ</button>
+    </div>
+  </div>
+  <div id="drErr" style="display:none;background:#FFE8E8;border:2px solid #FF6B6B;border-radius:12px;padding:12px;font-size:14px;color:#CC0000;margin-bottom:12px;">作品を選択してください</div>
+  <button class="start-btn" onclick="drStart()">🦉 スタート！</button>
+</div>
+
+<div class="dr-screen" id="dr-loading">
+  <div class="dr-card" style="text-align:center;padding:40px;">
+    <span class="owl-bounce">🦉</span>
+    <div id="drLoadMsg" style="font-size:18px;font-weight:700;color:#4A90D9;margin-top:16px;">本文を読んでいます…</div>
+  </div>
+</div>
+
+<div class="dr-screen" id="dr-book">
+  <div class="dr-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div>
+        <div id="drBookTitle" style="font-size:18px;font-weight:900;color:#1A2B4A;"></div>
+        <div id="drBookAuthor" style="font-size:12px;color:#8899AA;margin-top:2px;"></div>
+      </div>
+      <span style="font-size:36px;">📖</span>
+    </div>
+    <div id="drBookText" class="book-text"></div>
+  </div>
+  <button class="proceed-btn" onclick="drProceedToDrill()">🎯 問題を解く！</button>
+  <span class="home-link" onclick="drGoHome()">🏠 ホームに戻る</span>
+</div>
+
+<div class="dr-screen" id="dr-drill">
+  <div id="drBadge"></div>
+  <div class="owl-bubble">
+    <div class="owl-face">🦉</div>
+    <div class="bubble">
+      <div class="bubble-lv" id="drBubbleLv"></div>
+      <div class="bubble-q" id="drBubbleQ"></div>
+    </div>
+  </div>
+  <div class="chat-wrap" id="drChat"></div>
+  <div class="ans-area">
+    <div style="font-size:13px;font-weight:700;color:#8899AA;margin-bottom:8px;">🖊 回答を入力</div>
+    <textarea class="ans-ta" id="drAns" placeholder="ここに回答を入力…" rows="3"></textarea>
+  </div>
+  <div id="drDrillErr" style="display:none;background:#FFE8E8;border:2px solid #FF6B6B;border-radius:12px;padding:12px;font-size:14px;color:#CC0000;margin-bottom:12px;">回答を入力してから送信してください</div>
+  <div class="btn-row">
+    <button class="send-btn" id="drSendBtn" onclick="drSend()">✉️ 送信</button>
+    <button class="next-btn" id="drNextBtn" onclick="drNextLevel()" style="display:none;">次の問題 →</button>
+  </div>
+  <span class="home-link" onclick="drGoHome()">🏠 ホームに戻る</span>
+</div>
+
+<div class="dr-screen" id="dr-complete">
+  <div class="dr-card complete-card">
+    <span class="complete-icon">🎉</span>
+    <div style="font-size:36px;letter-spacing:4px;margin-bottom:16px;">⭐⭐⭐⭐</div>
+    <div class="complete-title">完了！</div>
+    <div class="complete-sub" id="drCompleteMsg"></div>
+    <button class="retry-btn" onclick="drGoHome()">🏠 ホームに戻る</button>
+  </div>
+</div>`;
+
+  drillState = {story:'',author:'',level:1,questions:[],currentQ:0,chatHistory:[],turnCount:0,storyText:'',storyUrl:''};
+}
+
+function drillStartFromLib(title, author){
+  drillApp();
+  drillState.story = title;
+  drillState.author = author;
+  document.querySelectorAll('.story-btn').forEach(function(b){b.classList.remove('selected');});
+  document.getElementById('drCustom').value = title;
+  drStart();
+}
+
+var LVINFO = {
+  1:{label:'レベル1 事実',icon:'📖',cls:'lv1'},
+  2:{label:'レベル2 理由',icon:'🤔',cls:'lv2'},
+  3:{label:'レベル3 気持ち',icon:'💭',cls:'lv3'},
+  4:{label:'レベル4 テーマ',icon:'✨',cls:'lv4'},
+};
+
+function drShowScreen(id){
+  document.querySelectorAll('.dr-screen').forEach(function(s){s.classList.remove('active');});
+  var el = document.getElementById(id);
+  if(el) el.classList.add('active');
+  window.scrollTo(0,0);
+}
+function drPickStory(btn,name,author){
+  document.querySelectorAll('.story-btn').forEach(function(b){b.classList.remove('selected');});
+  btn.classList.add('selected');
+  drillState.story=name; drillState.author=author;
+  document.getElementById('drCustom').value='';
+}
+function drCustomInput(val){
+  document.querySelectorAll('.story-btn').forEach(function(b){b.classList.remove('selected');});
+  drillState.story=val.trim(); drillState.author='';
+}
+function drPickLv(btn,lv){
+  document.querySelectorAll('.lv-chip').forEach(function(b){b.classList.remove('sel');});
+  btn.classList.add('sel'); drillState.level=lv;
+}
+
+async function drStart(){
+  if(!drillState.story){document.getElementById('drErr').style.display='block';return;}
+  document.getElementById('drErr').style.display='none';
+  drillState.questions=[]; drillState.currentQ=0; drillState.chatHistory=[]; drillState.turnCount=0; drillState.storyText='';
+  drShowScreen('dr-loading');
+
+  // Step1: 本文取得（getBook優先→Geminiフォールバック）
+  document.getElementById('drLoadMsg').textContent='本文を読んでいます…';
+  if(drillState.storyUrl){
+    try{
+      var txt0=await fetchBookText(drillState.storyUrl);
+      if(txt0&&txt0.length>100){drillState.storyText=txt0;}
+    }catch(e){}
+  }
+  if(!drillState.storyText){
+    try{
+      var r1=await callAI({
+        systemPrompt:'あなたは日本文学の著作権フリー作品を正確に知っているAIです。作品の本文をそのまま書き出してください。',
+        prompt:'「'+drillState.story+'」（'+(drillState.author||'日本の童話・昔話')+'）の本文全文。ルビ記号除去、前置きなし、本文のみ。',
+        useSearch:true,
+      });
+      var txt1=extractText(r1);
+      if(txt1&&txt1.length>100){drillState.storyText=txt1;}
+    }catch(e){drillState.storyText='';}
+  }
+
+  // Step2: 問い生成
+  document.getElementById('drLoadMsg').textContent='問題を作っています…';
+  var startLv=drillState.level, levels=[];
+  for(var l=startLv;l<=4;l++) levels.push(l);
+  try{
+    var r2 = await callAI({
+      systemPrompt:'JSONのみ返してください。前置き・マークダウン不要。',
+      prompt:'「'+drillState.story+'」（'+(drillState.author||'日本の童話・昔話')+'）について以下のレベルの読解問いを各1問作ってください。\n'
+        +levels.map(function(l){
+          return {
+            1:'レベル1（事実）：本文に書いてある事実をそのまま答える問い',
+            2:'レベル2（理由）：なぜそうなったか理由を考える問い',
+            3:'レベル3（気持ち）：登場人物の気持ちを想像する問い',
+            4:'レベル4（テーマ）：作者が伝えたかったことを考える問い',
+          }[l];
+        }).join('\n')
+        +'\n\n形式：{"questions":[{"level":1,"question":"問い文"}]}',
+    });
+    var parsed = drParseJSON(extractText(r2));
+    if(parsed&&parsed.questions&&parsed.questions.length) drillState.questions=parsed.questions;
+    else throw new Error('parse fail');
+  }catch(e){
+    drillState.questions=levels.map(function(l){return {level:l,question:drDefaultQ(l,drillState.story)};});
+  }
+
+  drShowBookScreen();
+}
+
+function drShowBookScreen(){
+  document.getElementById('drBookTitle').textContent='「'+drillState.story+'」';
+  document.getElementById('drBookAuthor').textContent=drillState.author||'';
+  document.getElementById('drBookText').textContent = drillState.storyText||'（本文の取得に失敗しました。問題から直接始めてください）';
+  drShowScreen('dr-book');
+}
+function drProceedToDrill(){ drShowScreen('dr-drill'); drRenderQ(); }
+
+function drRenderQ(){
+  var q=drillState.questions[drillState.currentQ];
+  if(!q){drComplete();return;}
+  var info=LVINFO[q.level];
+  drillState.turnCount=0; drillState.chatHistory=[];
+  document.getElementById('drBadge').innerHTML='<div class="lv-badge '+info.cls+'">'+info.icon+' '+info.label+'</div>';
+  document.getElementById('drBubbleLv').textContent=info.label;
+  document.getElementById('drBubbleQ').textContent=q.question;
+  document.getElementById('drChat').innerHTML='';
+  document.getElementById('drAns').value='';
+  document.getElementById('drSendBtn').style.display='';
+  document.getElementById('drNextBtn').style.display='none';
+  document.getElementById('drDrillErr').style.display='none';
+}
+
+async function drSend(){
+  var ans=document.getElementById('drAns').value.trim();
+  if(!ans){document.getElementById('drDrillErr').style.display='block';return;}
+  document.getElementById('drDrillErr').style.display='none';
+  drAddMsg('user',ans);
+  document.getElementById('drAns').value='';
+  document.getElementById('drSendBtn').disabled=true;
+
+  var q=drillState.questions[drillState.currentQ];
+  drillState.turnCount++;
+  drillState.chatHistory.push({role:'user',content:ans});
+
+  try{
+    var r = await callAI({
+      systemPrompt:'あなたはフクロウ先生という国語の読解指導の専門家です。「'+drillState.story+'」の問い「'+q.question+'」に対する回答を指導してください。答えを直接言わない。本文の根拠を必ず求める。褒めてから深掘りする。3〜5文で返す。日本語のみ。',
+      prompt:'（上記の会話の続きを踏まえて返答してください）',
+      messages: drillState.chatHistory,
+    });
+    var ai=extractText(r);
+    drillState.chatHistory.push({role:'model',content:ai});
+    drAddMsg('ai',ai);
+    if(drillState.turnCount>=3) document.getElementById('drNextBtn').style.display='';
+  }catch(e){ drAddMsg('ai','申し訳ありません。もう一度送信してください。'); }
+  document.getElementById('drSendBtn').disabled=false;
+}
+
+function drAddMsg(role,text){
+  var el=document.createElement('div');
+  el.className='chat-msg '+role;
+  el.innerHTML='<div class="who">'+(role==='user'?'あなた':'🦉 フクロウ先生')+'</div><div class="bbl">'+text.replace(/\n/g,'<br>')+'</div>';
+  document.getElementById('drChat').appendChild(el);
+  el.scrollIntoView({behavior:'smooth',block:'end'});
+}
+
+function drNextLevel(){
+  var q=drillState.questions[drillState.currentQ];
+  drillState.currentQ++;
+  if(drillState.currentQ>=drillState.questions.length) drComplete();
+  else { drRenderQ(); window.scrollTo(0,0); }
+}
+
+async function drComplete(){
+  // Firestoreに記録
+  if(currentUser){
+    try{
+      await fb().setDoc(fb().doc(fb().db,'drillRecords','rec_'+Date.now()),{
+        uid:currentUser.uid, email:currentUser.email,
+        story:drillState.story, author:drillState.author,
+        createdAt:fb().serverTimestamp(),
+      });
+    }catch(e){}
+  }
+  document.getElementById('drCompleteMsg').textContent=
+    '「'+drillState.story+'」の読解ドリルを完了しました！\n本文を繰り返し読むと、さらに深い理解が得られます。';
+  drShowScreen('dr-complete');
+}
+
+function drGoHome(){
+  drillState={story:'',author:'',level:1,questions:[],currentQ:0,chatHistory:[],turnCount:0,storyText:'',storyUrl:''};
+  drShowScreen('dr-select');
+}
+
+function drParseJSON(text){ try{return JSON.parse(text.replace(/```json|```/g,'').trim());}catch(e){return null;} }
+function drDefaultQ(lv,story){
+  return {
+    1:'「'+story+'」に登場する人物は誰ですか？',
+    2:'「'+story+'」で、主人公はなぜそのような行動をとったのですか？',
+    3:'「'+story+'」の主人公はどのような気持ちだったと思いますか？',
+    4:'「'+story+'」で作者が伝えたかったことは何だと思いますか？',
+  }[lv]||'';
+}
+function drShowScreen(id){ drShowScreenInner(id); }
+function drShowScreenInner(id){
+  document.querySelectorAll('.dr-screen').forEach(function(s){s.classList.remove('active');});
+  var el=document.getElementById(id); if(el) el.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+</script>
+<script>
+// ===== 💬 国語チャットボットアプリ =====
+var chatHistory = [];
+
+function chatApp(){
+  var el = document.getElementById('appMain');
+  el.innerHTML = `
+<style>
+.chat-header{background:#fff;border-radius:20px;padding:16px 20px;box-shadow:0 4px 20px rgba(74,144,217,.13);margin-bottom:12px;display:flex;align-items:center;gap:12px;}
+.chat-owl{font-size:48px;}
+.chat-header-text .title{font-size:17px;font-weight:900;color:#1A2B4A;}
+.chat-header-text .sub{font-size:12px;color:#8899AA;margin-top:2px;}
+.mode-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.mode-btn{padding:8px 14px;border:2px solid #D0DFF0;border-radius:10px;background:#fff;color:#8899AA;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+.mode-btn.active{background:#EBF4FF;border-color:#4A90D9;color:#4A90D9;}
+.chat-area{background:#fff;border-radius:20px;padding:16px;box-shadow:0 4px 20px rgba(74,144,217,.13);min-height:300px;max-height:50vh;overflow-y:auto;margin-bottom:12px;}
+.cmsg{margin-bottom:12px;animation:fadeIn .3s ease;}
+.cmsg.user{text-align:right;}
+.cmsg.user .cb{display:inline-block;background:#4A90D9;color:#fff;padding:10px 14px;border-radius:18px 18px 4px 18px;font-size:16px;max-width:85%;text-align:left;line-height:1.6;}
+.cmsg.ai .cb{display:inline-block;background:#F0F4FF;border:2px solid #D0DFF0;color:#1A2B4A;padding:10px 14px;border-radius:18px 18px 18px 4px;font-size:16px;max-width:90%;line-height:1.6;}
+.cmsg .cw{font-size:10px;color:#8899AA;margin-bottom:3px;font-weight:700;}
+.chat-input-area{background:#fff;border-radius:20px;padding:16px;box-shadow:0 4px 20px rgba(74,144,217,.13);}
+.chat-ta{width:100%;min-height:70px;padding:12px;border:2px solid #D0DFF0;border-radius:12px;font-family:inherit;font-size:16px;color:#1A2B4A;resize:none;outline:none;line-height:1.6;margin-bottom:10px;transition:border-color .2s;}
+.chat-ta:focus{border-color:#4A90D9;}
+.chat-send{width:100%;padding:14px;background:linear-gradient(135deg,#4A90D9,#2E6DB4);color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:17px;font-weight:900;cursor:pointer;}
+.chat-send:disabled{background:#CCC;cursor:not-allowed;}
+.chat-clear{width:100%;padding:10px;background:none;border:2px solid #D0DFF0;border-radius:12px;font-family:inherit;font-size:14px;color:#8899AA;cursor:pointer;margin-top:8px;}
+</style>
+<div class="chat-header">
+  <div class="chat-owl">🦉</div>
+  <div class="chat-header-text">
+    <div class="title">フクロウ先生に質問</div>
+    <div class="sub">国語のことなら何でも聞いてください</div>
+  </div>
+</div>
+<div class="mode-row">
+  <button class="mode-btn active" id="mode-free" onclick="chatSetMode('free',this)">💬 なんでも質問</button>
+  <button class="mode-btn" id="mode-word" onclick="chatSetMode('word',this)">📖 言葉の意味</button>
+  <button class="mode-btn" id="mode-write" onclick="chatSetMode('write',this)">✏️ 作文添削</button>
+  <button class="mode-btn" id="mode-read" onclick="chatSetMode('read',this)">🔍 読み方を教えて</button>
+</div>
+<div class="chat-area" id="chatArea">
+  <div class="cmsg ai">
+    <div class="cw">🦉 フクロウ先生</div>
+    <div class="cb">こんにちは！国語のことなら何でも聞いてください。言葉の意味・作文の書き方・読み方のコツなど、お気軽にどうぞ。</div>
+  </div>
+</div>
+<div class="chat-input-area">
+  <textarea class="chat-ta" id="chatInput" placeholder="質問を入力してください…" rows="3"></textarea>
+  <button class="chat-send" id="chatSendBtn" onclick="chatSend()">✉️ 送信</button>
+  <button class="chat-clear" onclick="chatClear()">🗑️ 会話をリセット</button>
+</div>`;
+
+  chatHistory = [];
+}
+
+var chatMode = 'free';
+var CHAT_PROMPTS = {
+  free:  'あなたはフクロウ先生という国語の専門家です。ユーザーの国語に関する質問に丁寧に答えてください。日本語のみ。わかりやすく具体例を交えて説明してください。',
+  word:  'あなたはフクロウ先生という国語辞典の専門家です。言葉の意味・語源・用例を詳しく、わかりやすく説明してください。日本語のみ。',
+  write: 'あなたはフクロウ先生という文章添削の専門家です。ユーザーの文章の良いところを先に褒め、改善点を1〜2箇所だけ優しく指摘してください。日本語のみ。',
+  read:  'あなたはフクロウ先生という読解指導の専門家です。文章の読み方・登場人物の気持ちの読み取り方・テーマの見つけ方を具体的に指導してください。日本語のみ。',
+};
+
+function chatSetMode(mode, btn){
+  chatMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+}
+
+async function chatSend(){
+  var input = document.getElementById('chatInput').value.trim();
+  if(!input) return;
+  chatAddMsg('user', input);
+  document.getElementById('chatInput').value='';
+  document.getElementById('chatSendBtn').disabled=true;
+
+  chatHistory.push({role:'user', content:input});
+
+  try{
+    var r = await callAI({
+      systemPrompt: CHAT_PROMPTS[chatMode],
+      prompt: input,
+      messages: chatHistory,
+    });
+    var ai = extractText(r);
+    chatHistory.push({role:'model', content:ai});
+    chatAddMsg('ai', ai);
+  }catch(e){
+    chatAddMsg('ai','申し訳ありません。もう一度送信してください。');
+  }
+  document.getElementById('chatSendBtn').disabled=false;
+}
+
+function chatAddMsg(role, text){
+  var el = document.createElement('div');
+  el.className = 'cmsg '+role;
+  el.innerHTML = '<div class="cw">'+(role==='user'?'あなた':'🦉 フクロウ先生')+'</div>'
+    +'<div class="cb">'+text.replace(/\n/g,'<br>')+'</div>';
+  document.getElementById('chatArea').appendChild(el);
+  el.scrollIntoView({behavior:'smooth',block:'end'});
+}
+
+function chatClear(){
+  if(!confirm('会話をリセットしますか？'))return;
+  chatHistory=[];
+  document.getElementById('chatArea').innerHTML=
+    '<div class="cmsg ai"><div class="cw">🦉 フクロウ先生</div><div class="cb">会話をリセットしました。何でも聞いてください！</div></div>';
+}
+
+</script>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, orderBy, query, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+const app = initializeApp({
+  apiKey:"AIzaSyCVk2miG5TK1ffTofXLh0hHgeSbOvmIgZ8",
+  authDomain:"kensetsu-nippo-842a2.firebaseapp.com",
+  projectId:"kensetsu-nippo-842a2",
+  storageBucket:"kensetsu-nippo-842a2.firebasestorage.app",
+  messagingSenderId:"702880974315",
+  appId:"1:702880974315:web:985321dc9180046629c5ae"
+});
+const auth=getAuth(app),db=getFirestore(app);
+window.__fb={
+  auth,db,
+  signInWithEmailAndPassword,createUserWithEmailAndPassword,
+  signOut,onAuthStateChanged,updatePassword,
+  collection,doc,setDoc,getDoc,getDocs,deleteDoc,
+  orderBy,query,serverTimestamp
+};
+</script>
+</body>
+</html>
